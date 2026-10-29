@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Rafael Barber - Clientes</title>
+</head>
+
+<body>
+  <h1>Rafael Barber - Clientes</h1>
+  <label>Nome <input id="nome"></label><br>
+  <label>Telefone <input id="telefone"></label><br>
+  <label>E-mail <input id="email"></label><br>
+  <button onclick="salvar()">Salvar</button>
+  <p id="msg"></p>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Telefone</th>
+      </tr>
+    </thead>
+    <tbody id="lista"></tbody>
+  </table>
+
+  <script>
+    async function carregar() {
+      const r = await fetch('/clientes');
+      const clientes = await r.json();
+      document.getElementById('lista').innerHTML = clientes
+        .map(c => `<tr><td>${c.id}</td><td>${c.nome}</td><td>${c.telefone}</td></tr>`).join('');
+    }
+    async function salvar() {
+      const corpo = {
+        nome: document.getElementById('nome').value,
+        telefone: document.getElementById('telefone').value,
+        email: document.getElementById('email').value
+      };
+      const r = await fetch('/clientes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(corpo)
+      });
+      const dados = await r.json();
+      document.getElementById('msg').textContent = dados.mensagem || dados.erro;
+      carregar();
+    }
+    carregar();
+  </script>
+</body>
+
+</html>

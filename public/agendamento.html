@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Rafael Barber - Novo agendamento</title>
+</head>
+
+<body>
+    <h1>Rafael Barber - Novo agendamento</h1>
+    <label>Cliente <select id="cliente"></select></label><br>
+    <label>Serviço <select id="servico"></select></label><br>
+    <label>Profissional <select id="profissional"></select></label><br>
+    <label>Data/Horário <input type="datetime-local" id="data"></label><br>
+    <button onclick="agendar()">Agendar</button>
+    <p id="msg"></p>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Horário</th>
+                <th>Cliente</th>
+                <th>Serviço</th>
+                <th>Profissional</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="lista"></tbody>
+    </table>
+    <script>
+        async function preencher(url, id) {
+            const itens = await (await fetch(url)).json();
+            document.getElementById(id).innerHTML =
+                itens.map(i => `<option value="${i.id}">${i.nome}</option>`).join('');
+        }
+        async function carregarAgenda() {
+            const ag = await (await fetch('/agendamentos')).json();
+            document.getElementById('lista').innerHTML = ag.map(a =>
+                `<tr><td>${a.data_hora}</td><td>${a.cliente}</td><td>${a.servico}</td><td>${a.profissional}</td><td>${a.status}</td></tr>`
+            ).join('');
+        }
+        async function agendar() {
+            const corpo = {
+                cliente_id: document.getElementById('cliente').value,
+                servico_id: document.getElementById('servico').value,
+                profissional_id: document.getElementById('profissional').value,
+                data_hora: document.getElementById('data').value.replace('T', ' ')
+            };
+            const r = await fetch('/agendamentos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(corpo)
+            });
+            const d = await r.json();
+            document.getElementById('msg').textContent = d.mensagem || d.erro;
+            carregarAgenda();
+        }
+        preencher('/clientes', 'cliente');
+        preencher('/servicos', 'servico');
+        preencher('/profissionais', 'profissional');
+        carregarAgenda();
+    </script>
+</body>
+
+</html>
